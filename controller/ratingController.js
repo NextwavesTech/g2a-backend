@@ -1,31 +1,31 @@
 import { Rating } from "../model/rating.js";
 
-export const createRating = async (req, res) => {
-  const rating = req.body;
-  const user = rating.user;
-  const product = rating.product;
-  const existRating = Rating.findOne({ user: user, product: product });
-  if (existRating) {
-    return res
-      .status(404)
-      .json({
-        status: "fail",
-        message: "You already give rating to this product",
-      });
-  }
-  const newRating = new Rating(rating);
 
-  try {
-    await newRating.save();
-    res.status(201).json({
-      data: newRating,
-      message: "Rating created successfully",
-      status: "success",
-    });
-  } catch (error) {
-    res.status(409).json({ message: error.message });
-  }
-};
+  export const createRating = async (req, res) => {
+    const { user, product, rating } = req.body;
+  const data = req.body;
+    try {
+      const existRating = await Rating.findOne({ user, product });
+  
+      if (existRating) {
+        return res.status(400).json({
+          status: "fail",
+          message: "You have already given a rating to this product",
+        });
+      }
+  
+      const newRating = new Rating(data);
+      await newRating.save();
+  
+      res.status(201).json({
+        data: newRating,
+        message: "Rating created successfully",
+        status: "success",
+      });
+    } catch (error) {
+      res.status(500).json({ status: "error", message: error.message });
+    }
+  };
 
 export const getRatings = async (req, res) => {
   try {
