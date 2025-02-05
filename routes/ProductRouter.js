@@ -19,5 +19,5 @@ productRouter.route("/productByCategory").get(getProductsByCategory);
 
 productRouter.route("/subcategory/:subcategoryId").get(getProductbysubCategoryId);
 productRouter.route("/delete/:id").delete(deleteproductsById);
-productRouter.route('getBestSellers').get(getBestSellers)
+productRouter.route('/getBestSellers').get(getBestSellers)
 export default productRouter;
