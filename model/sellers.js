@@ -7,6 +7,9 @@ const sellerSchema = new Schema({
     type: String,
     require: true,
   },
+  logo:{
+    type: String,
+  },
   registrationNumber: {
     type: String,
     require: true,

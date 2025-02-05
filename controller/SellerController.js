@@ -12,6 +12,7 @@ cloudinary.v2.config({
 export const register = catchAsyncError(async (req, res, next) => {
   let image = req.files.cnicFront;
   let image1 = req.files.cnicBack;
+  let image2 = req.files.logo;
   const data = req.body;
   const email = data?.email;
   const existingUser = await Sellers.findOne({ email: email });
@@ -28,8 +29,15 @@ export const register = catchAsyncError(async (req, res, next) => {
       message: "Please Select CNIC Back Image!",
     });
   }
+  if (!image2) {
+    return res.status(400).json({
+      status: "fail",
+      message: "Please Select Logo Image!",
+    });
+  }
   const result = await cloudinary.v2.uploader.upload(image.tempFilePath);
   const result1 = await cloudinary.v2.uploader.upload(image1.tempFilePath);
+  const result2 = await cloudinary.v2.uploader.upload(image2.tempFilePath);
   if (existingUser) {
     return res
       .status(400)
@@ -39,6 +47,7 @@ export const register = catchAsyncError(async (req, res, next) => {
       ...data,
       cnicFront: result.url,
       cnicBack: result1.url,
+      logo: result2.url,
     };
 
     const user = await Sellers.create(data1);
