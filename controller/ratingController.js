@@ -1,5 +1,4 @@
 import { Rating } from "../model/rating.js";
-import mongoose from "mongoose";
 
 export const createRating = async (req, res) => {
   const rating = req.body;
@@ -50,7 +49,7 @@ export const getRating = async (req, res) => {
 export const updateRating = async (req, res) => {
   const { id } = req.params;
   const rating = req.body;
-  if (!mongoose.Types.ObjectId.isValid(id))
+  if (!id)
     return res.status(404).send(`No rating with id: ${id}`);
   const updatedRating = await Rating.findByIdAndUpdate(id, rating, {
     new: true,
@@ -65,7 +64,7 @@ export const updateRating = async (req, res) => {
 };
 export const deleteRating = async (req, res) => {
   const { id } = req.params;
-  if (!mongoose.Types.ObjectId.isValid(id))
+  if (!id)
     return res.status(404).send(`No rating with id: ${id}`);
   await Rating.findByIdAndRemove(id);
   res
