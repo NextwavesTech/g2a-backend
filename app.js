@@ -21,7 +21,7 @@ import sellerRoute from "./routes/SellerRouter.js";
 import wishlistRoute from "./routes/WishlistRouter.js";
 import flashDealRouter from "./routes/FlashDealRouter.js";
 import upcomingRouter from "./routes/UpcomingRouter.js";
-import ratingRoute from "./routes/ratingRouter.js";
+import ratingRoute from "./routes/RatingRouter.js";
 connectDB();
 
 app.use(cors());
