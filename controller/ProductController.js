@@ -301,8 +301,13 @@ export const getProductsByCategory = async (req, res, next) => {
   }
 };
 
+
 export const getBestSellers = async (req, res) => {
   try {
+    const page = parseInt(req.query.page) || 1; // Default to page 1
+    const limit = 6; // 6 items per page
+    const skip = (page - 1) * limit;
+
     // Aggregate ratings to get the average rating and count per product
     const bestSellers = await Rating.aggregate([
       {
@@ -312,8 +317,9 @@ export const getBestSellers = async (req, res) => {
           totalRatings: { $sum: 1 },
         },
       },
-      { $sort: { averageRating: -1, totalRatings: -1 } }, // Sort by rating & number of reviews
-      { $limit: 10 }, // Get top 10 best sellers
+      { $sort: { averageRating: -1, totalRatings: -1 } }, // Sort by rating & total reviews
+      { $skip: skip }, // Skip based on page
+      { $limit: limit }, // Limit to 6 items per page
       {
         $lookup: {
           from: "products", // Reference the 'Products' collection
@@ -326,15 +332,31 @@ export const getBestSellers = async (req, res) => {
       {
         $project: {
           _id: "$productDetails._id",
-          productDetails: 1, // Includes all fields from Products collection
+          productDetails: 1, // Include all product fields
           averageRating: { $round: ["$averageRating", 1] }, // Round rating to 1 decimal
           totalRatings: 1,
         },
       },
     ]);
 
+    // Count total best seller products
+    const totalBestSellers = await Rating.aggregate([
+      {
+        $group: {
+          _id: "$product",
+        },
+      },
+      { $count: "total" },
+    ]);
+
+    const total = totalBestSellers.length > 0 ? totalBestSellers[0].total : 0;
+    const totalPages = Math.ceil(total / limit);
+
     res.status(200).json({
       status: "success",
+      currentPage: page,
+      totalPages: totalPages,
+      totalItems: total,
       data: bestSellers,
     });
   } catch (error) {
@@ -344,3 +366,4 @@ export const getBestSellers = async (req, res) => {
     });
   }
 };
+
