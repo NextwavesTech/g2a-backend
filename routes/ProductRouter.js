@@ -4,7 +4,7 @@ import {
   getAllProducts,
   getProductsById,
   deleteproductsById,
-  searchProduct,getProductbyCategorId,getProductbysubCategoryId,getProductbybrandId,getProductsByCategory
+  searchProduct,getProductbyCategorId,getProductbysubCategoryId,getProductbybrandId,getProductsByCategory,getBestSellers
 } from "../controller/ProductController.js";
 const productRouter = express.Router();
 
@@ -19,5 +19,5 @@ productRouter.route("/productByCategory").get(getProductsByCategory);
 
 productRouter.route("/subcategory/:subcategoryId").get(getProductbysubCategoryId);
 productRouter.route("/delete/:id").delete(deleteproductsById);
-
+productRouter.route('getBestSellers').get(getBestSellers)
 export default productRouter;

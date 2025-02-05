@@ -2,6 +2,8 @@ import { catchAsyncError } from "../middleware/catchAsyncError.js";
 import { Products } from "../model/Product.js";
 // import { Category } from "../model/category.js";
 import cloudinary from "cloudinary";
+import { Rating } from "../model/rating.js";
+
 cloudinary.v2.config({
   cloud_name: "ddu4sybue",
   api_key: "658491673268817",
@@ -296,5 +298,49 @@ export const getProductsByCategory = async (req, res, next) => {
     });
   } catch (error) {
     next(error); // Pass error to global error handler
+  }
+};
+
+export const getBestSellers = async (req, res) => {
+  try {
+    // Aggregate ratings to get the average rating and count per product
+    const bestSellers = await Rating.aggregate([
+      {
+        $group: {
+          _id: "$product",
+          averageRating: { $avg: "$rating" },
+          totalRatings: { $sum: 1 },
+        },
+      },
+      { $sort: { averageRating: -1, totalRatings: -1 } }, // Sort by rating & number of reviews
+      { $limit: 10 }, // Get top 10 best sellers
+      {
+        $lookup: {
+          from: "products", // Reference the 'Products' collection
+          localField: "_id",
+          foreignField: "_id",
+          as: "productDetails",
+        },
+      },
+      { $unwind: "$productDetails" }, // Convert array to object
+      {
+        $project: {
+          _id: "$productDetails._id",
+          productDetails: 1, // Includes all fields from Products collection
+          averageRating: { $round: ["$averageRating", 1] }, // Round rating to 1 decimal
+          totalRatings: 1,
+        },
+      },
+    ]);
+
+    res.status(200).json({
+      status: "success",
+      data: bestSellers,
+    });
+  } catch (error) {
+    res.status(500).json({
+      status: "error",
+      message: error.message,
+    });
   }
 };
