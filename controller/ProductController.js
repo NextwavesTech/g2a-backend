@@ -92,7 +92,7 @@ export const getAllProducts = catchAsyncError(async (req, res, next) => {
     const products = await Products.find()
       .populate("categoryId")
       .populate("subCategoryId")
-      .populate("brandId")
+      .populate("brandId").populate('sellerId')
       .skip(skip)
       .limit(limit);
     const totalproducts = await Products.countDocuments();
