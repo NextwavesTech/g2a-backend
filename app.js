@@ -22,6 +22,8 @@ import wishlistRoute from "./routes/WishlistRouter.js";
 import flashDealRouter from "./routes/FlashDealRouter.js";
 import upcomingRouter from "./routes/UpcomingRouter.js";
 import ratingRoute from "./routes/RatingRouter.js";
+import regionRoute from "./routes/RegionRouter.js";
+import platformRouter from "./routes/PlatformRouter.js";
 connectDB();
 
 app.use(cors());
@@ -57,6 +59,8 @@ app.use("/wishlist", wishlistRoute);
 app.use("/flashDeals", flashDealRouter);
 app.use("/upcoming", upcomingRouter);
 app.use("/rating", ratingRoute);
+app.use("/region", regionRoute);
+app.use("/platform", platformRouter);
 app.get("/", async (req, res) => {
   res.send("App Is Running");
 });

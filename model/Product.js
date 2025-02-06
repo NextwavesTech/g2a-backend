@@ -53,20 +53,21 @@ const productSchema = new Schema({
     enum: ["pending", "approved"],
     default: "pending",
   },
-  platform :{
+  platform: {
+    type: mongoose.Schema.Types.ObjectId,
+    ref: "platform",
+  },
+  type: {
     type: String,
   },
-  type:{
-    type: String,
+  region: {
+    type: mongoose.Schema.Types.ObjectId,
+    ref: "region",
   },
-  region:{
+  stock: {
     type: String,
-  }
+    enum: ["In Stock", "Out Of Stock"],
+  },
 });
 
 export const Products = mongoose.model("Products", productSchema);
-
-
-
-
-
