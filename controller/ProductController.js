@@ -134,16 +134,31 @@ export const searchProduct = catchAsyncError(async (req, res, next) => {
 });
 export const getProductbybrandId = async (req, res, next) => {
   const brandId = req?.params.brandId;
+  const page = parseInt(req.query.page) || 1; // Get page number from query, default to 1
+  const limit = 12; // Limit per page
+  const skip = (page - 1) * limit;
+
   try {
     const data = await Products.find({ brandId: brandId })
       .populate("categoryId")
       .populate("subCategoryId")
-      .populate("brandId");
-    // const cateforyData = await await Category.findById(categoryId);
+      .populate("brandId")
+      .skip(skip)
+      .limit(limit);
+
+    const total = await Products.countDocuments({ brandId: brandId });
+    const totalPages = Math.ceil(total / limit);
+
     res.json({
       status: "success",
       data: data,
-      // category: cateforyData,
+      pagination: {
+        total,
+        totalPages,
+        currentPage: page,
+        hasNextPage: page < totalPages,
+        hasPrevPage: page > 1,
+      },
     });
   } catch (error) {
     console.log(error);
@@ -155,16 +170,31 @@ export const getProductbybrandId = async (req, res, next) => {
 };
 export const getProductbyCategorId = async (req, res, next) => {
   const categoryId = req?.params.categoryId;
+  const page = parseInt(req.query.page) || 1; // Get page number from query, default to 1
+  const limit = 12; // Limit per page
+  const skip = (page - 1) * limit;
+
   try {
     const data = await Products.find({ categoryId: categoryId })
       .populate("categoryId")
       .populate("subCategoryId")
-      .populate("brandId");
-    // const cateforyData = await await Category.findById(categoryId);
+      .populate("brandId")
+      .skip(skip)
+      .limit(limit);
+
+    const total = await Products.countDocuments({ categoryId: categoryId });
+    const totalPages = Math.ceil(total / limit);
+
     res.json({
       status: "success",
       data: data,
-      // category: cateforyData,
+      pagination: {
+        total,
+        totalPages,
+        currentPage: page,
+        hasNextPage: page < totalPages,
+        hasPrevPage: page > 1,
+      },
     });
   } catch (error) {
     console.log(error);
@@ -174,18 +204,34 @@ export const getProductbyCategorId = async (req, res, next) => {
     });
   }
 };
+
 export const getProductbysubCategoryId = async (req, res, next) => {
   const categoryId = req?.params.subcategoryId;
+  const page = parseInt(req.query.page) || 1; // Get page number from query, default to 1
+  const limit = 12; // Limit per page
+  const skip = (page - 1) * limit;
+
   try {
     const data = await Products.find({ subCategoryId: categoryId })
       .populate("categoryId")
       .populate("subCategoryId")
-      .populate("brandId");
-    // const cateforyData = await await Category.findById(categoryId);
+      .populate("brandId")
+      .skip(skip)
+      .limit(limit);
+
+    const total = await Products.countDocuments({ subCategoryId: categoryId });
+    const totalPages = Math.ceil(total / limit);
+
     res.json({
       status: "success",
       data: data,
-      // category: cateforyData,
+      pagination: {
+        total,
+        totalPages,
+        currentPage: page,
+        hasNextPage: page < totalPages,
+        hasPrevPage: page > 1,
+      },
     });
   } catch (error) {
     console.log(error);
@@ -195,6 +241,7 @@ export const getProductbysubCategoryId = async (req, res, next) => {
     });
   }
 };
+
 // delete products
 export const deleteproductsById = async (req, res, next) => {
   const id = req.params.id;
