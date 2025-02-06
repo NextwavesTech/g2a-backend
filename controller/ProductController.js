@@ -247,6 +247,40 @@ export const getProductbysubCategoryId = async (req, res, next) => {
   }
 };
 
+// Get Products by sellerId
+
+export const getProductsBySellerId = async (req, res, next) => {
+  const sellerId = req.params.sellerId;
+  const page = parseInt(req.query.page) || 1; // Get page number from query, default to 1
+  const limit = 12; // Limit per page
+  const skip = (page - 1) * limit;
+  try {
+    const products = await Products.find({ sellerId: sellerId })
+      .populate("categoryId")
+      .populate("subCategoryId")
+      .populate("brandId")
+      .populate("sellerId")
+      .skip(skip)
+      .limit(limit);
+    const total = await Products.countDocuments({ subCategoryId: categoryId });
+    const totalPages = Math.ceil(total / limit);
+    res.json({
+      status: "success",
+      data: products,
+      pagination: {
+        total,
+        totalPages,
+        currentPage: page,
+        hasNextPage: page < totalPages,
+        hasPrevPage: page > 1,
+      },
+    });
+  } catch (error) {
+    console.log(error);
+    res.status(500).json({ status: "fail", message: "Internal Server Error" });
+  }
+};
+
 // delete products
 export const deleteproductsById = async (req, res, next) => {
   const id = req.params.id;

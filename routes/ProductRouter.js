@@ -10,6 +10,7 @@ import {
   getProductbybrandId,
   getProductsByCategory,
   getBestSellers,
+  getProductsBySellerId,
 } from "../controller/ProductController.js";
 const productRouter = express.Router();
 
@@ -21,7 +22,7 @@ productRouter.route("/category/:categoryId").get(getProductbyCategorId);
 productRouter.route("/category/:categoryId").get(getProductbyCategorId);
 productRouter.route("/brand/:brandId").get(getProductbybrandId);
 productRouter.route("/productByCategory").get(getProductsByCategory);
-
+productRouter.route("/productBySeller/:sellerId").get(getProductsBySellerId);
 productRouter
   .route("/subcategory/:subcategoryId")
   .get(getProductbysubCategoryId);
