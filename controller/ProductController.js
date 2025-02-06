@@ -262,7 +262,7 @@ export const getProductsBySellerId = async (req, res, next) => {
       .populate("sellerId")
       .skip(skip)
       .limit(limit);
-    const total = await Products.countDocuments({ subCategoryId: categoryId });
+    const total = await Products.countDocuments({ sellerId: sellerId });
     const totalPages = Math.ceil(total / limit);
     res.json({
       status: "success",
