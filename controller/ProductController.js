@@ -52,7 +52,8 @@ export const getProductsById = async (req, res, next) => {
     const data = await Products.findById(id)
       .populate("categoryId")
       .populate("subCategoryId")
-      .populate("brandId").populate('sellerId');
+      .populate("brandId")
+      .populate("sellerId");
 
     res.json({
       status: "success",
@@ -94,17 +95,21 @@ export const getAllProducts = catchAsyncError(async (req, res, next) => {
     const products = await Products.find()
       .populate("categoryId")
       .populate("subCategoryId")
-      .populate("brandId").populate('sellerId')
+      .populate("brandId")
+      .populate("sellerId")
       .skip(skip)
       .limit(limit);
     const totalproducts = await Products.countDocuments();
+    const totalPages = Math.ceil(totalproducts / limit);
     res.status(200).json({
       status: "success",
-      data: {
-        data: products,
+      data: products,
+      pagination: {
+        total: totalproducts,
+        totalPages,
         currentPage: page,
-        totalPages: Math.ceil(totalproducts / limit),
-        totalproducts,
+        hasNextPage: page < totalPages,
+        hasPrevPage: page > 1,
       },
     });
   } catch (error) {
@@ -348,7 +353,6 @@ export const getProductsByCategory = async (req, res, next) => {
   }
 };
 
-
 export const getBestSellers = async (req, res) => {
   try {
     const page = parseInt(req.query.page) || 1; // Default to page 1
@@ -413,4 +417,3 @@ export const getBestSellers = async (req, res) => {
     });
   }
 };
-
