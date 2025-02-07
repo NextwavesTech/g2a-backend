@@ -307,91 +307,99 @@ export const deleteproductsById = async (req, res, next) => {
 
 export const getProductsByCategory = async (req, res, next) => {
   try {
-    const page = parseInt(req.query.page, 10) || 1; // Default to page 1
-    const limit = parseInt(req.query.limit, 10) || 10; // Default to 10 items per page
+    const page = parseInt(req.query.page, 10) || 1;
+    const limit = parseInt(req.query.limit, 10) || 10;
+
+    const productPage = parseInt(req.query.productPage, 10) || 1;
+    const productLimit = parseInt(req.query.productLimit, 10) || 10;
+    const productSkip = (productPage - 1) * productLimit;
+
     const skip = (page - 1) * limit;
 
-    // Aggregation pipeline to fetch products with nested category data
+   
     const products = await Products.aggregate([
-      // Lookup Brand data
+    
       {
         $lookup: {
-          from: "brands", // Collection name for Brands
-          localField: "brandId", // Field in Products
-          foreignField: "_id", // Field in Brands
+          from: "brands",
+          localField: "brandId",
+          foreignField: "_id",
           as: "brand",
         },
       },
       { $unwind: { path: "$brand", preserveNullAndEmptyArrays: true } },
 
-      // Lookup MidCategory data
+     
       {
         $lookup: {
-          from: "midcategories", // Collection name for MidCategory
-          localField: "categoryId", // Field in Products
-          foreignField: "_id", // Field in MidCategory
+          from: "midcategories",
+          localField: "categoryId",
+          foreignField: "_id",
           as: "category",
         },
       },
       { $unwind: { path: "$category", preserveNullAndEmptyArrays: true } },
 
-      // Lookup SubCategory data
+     
       {
         $lookup: {
-          from: "subcategories", // Collection name for SubCategory
-          localField: "subCategoryId", // Field in Products
-          foreignField: "_id", // Field in SubCategory
+          from: "subcategories",
+          localField: "subCategoryId",
+          foreignField: "_id",
           as: "subCategory",
         },
       },
       { $unwind: { path: "$subCategory", preserveNullAndEmptyArrays: true } },
 
-      // Group products by category
+     
       {
         $group: {
-          _id: "$category._id",
-          categoryTitle: { $first: "$category.title" },
+          _id: "$brand._id",
           brandName: { $first: "$brand.name" },
-          products: {
-            $push: {
-              _id: "$_id",
-              title: "$title",
-              images: "$images",
-              actualPrice: "$actualPrice",
-              discountPrice: "$discountPrice",
-              gst: "$gst",
-              description: "$description",
-              createdAt: "$createdAt",
-              status: "$status",
-              subCategoryTitle: "$subCategory.title",
-            },
-          },
+          totalProducts: { $sum: 1 },
+          products: { $push: "$$ROOT" },
         },
       },
 
-      // Pagination: skip and limit
+     
+      {
+        $project: {
+          _id: 1,
+          brandName: 1,
+          totalProducts: 1,
+          totalProductPages: { $ceil: { $divide: ["$totalProducts", productLimit] } },
+          productPage: { $literal: productPage },
+          productLimit: { $literal: productLimit }, 
+          products: { $slice: ["$products", productSkip, productLimit] },
+        },
+      },
+
+      // Pagination for brands
       { $skip: skip },
       { $limit: limit },
     ]);
 
-    // Count total products
-    const totalProducts = await Products.countDocuments();
+    // Count total brands
+    const totalBrands = await Products.distinct("brandId").then((res) => res.length);
 
     // Send response
     res.status(200).json({
       status: "success",
       data: products,
       pagination: {
-        total: totalProducts,
+        totalBrands,
         page,
         limit,
-        totalPages: Math.ceil(totalProducts / limit),
+        totalPages: Math.ceil(totalBrands / limit),
       },
     });
   } catch (error) {
-    next(error); // Pass error to global error handler
+    next(error);
   }
 };
+
+
+
 
 export const getBestSellers = async (req, res) => {
   try {

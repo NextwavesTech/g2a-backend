@@ -51,8 +51,6 @@ export const getAll = async (req, res, next) => {
     const page = parseInt(req.query.page, 10) || 1;
     const limit = 6;
     const skip = (page - 1) * limit;
-
-    // Fetch wishlist and populate product details
     let wishlist = await Wishlist.find()
       .populate("productId")
       .skip(skip)

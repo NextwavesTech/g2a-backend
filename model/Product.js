@@ -45,7 +45,7 @@ const productSchema = new Schema({
   },
   minStock: {
     type: String,
-    require: false,
+    default:0,
   },
   description: {
     type: String,
@@ -76,5 +76,15 @@ const productSchema = new Schema({
     enum: ["In Stock", "Out Of Stock"],
   },
 });
+
+productSchema.pre("save", function (next) {
+  if (this.stock <= this.minStock) {
+    this.stockStatus = "Out Of Stock";
+  } else {
+    this.stockStatus = "In Stock";
+  }
+  next();
+});
+
 
 export const Products = mongoose.model("Products", productSchema);
