@@ -19,4 +19,10 @@ const wishlistSchema = new Schema({
       },
 });
 
+wishlistSchema.post("findOneAndDelete", async function (doc) {
+  if (doc) {
+    await Wishlist.deleteMany({ productId: doc._id });
+  }
+});
+
 export const Wishlist = mongoose.model("wishlist", wishlistSchema);

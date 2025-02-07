@@ -52,12 +52,15 @@ export const getAll = async (req, res, next) => {
     const limit = 6;
     const skip = (page - 1) * limit;
 
+    // Fetch wishlist and populate product details
     let wishlist = await Wishlist.find()
       .populate("productId")
       .skip(skip)
       .limit(limit);
 
-    const totalItems = await Wishlist.countDocuments();
+    wishlist = wishlist.filter(item => item.productId !== null);
+
+    const totalItems = await Wishlist.countDocuments({ productId: { $ne: null } });
 
     res.json({
       status: "success",
@@ -70,7 +73,7 @@ export const getAll = async (req, res, next) => {
       },
     });
   } catch (error) {
-    res.status(500).json({ error: "Error fetching wishlist"});
+    res.status(500).json({ error: "Error fetching wishlist" });
   }
 };
 
