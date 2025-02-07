@@ -48,17 +48,15 @@ export const deleteById = async (req, res, next) => {
 
 export const getAll = async (req, res, next) => { 
   try {
-    const page = parseInt(req.query.page, 10) || 1; // Default to page 1 if not provided
-    const limit = 6; // Fixed limit of 6 items per page
+    const page = parseInt(req.query.page, 10) || 1;
+    const limit = 6;
     const skip = (page - 1) * limit;
 
-    // Fetch the wishlist with pagination and populate product details
-    const wishlist = await Wishlist.find()
+    let wishlist = await Wishlist.find()
       .populate("productId")
       .skip(skip)
       .limit(limit);
 
-    // Count total documents for pagination metadata
     const totalItems = await Wishlist.countDocuments();
 
     res.json({
@@ -72,7 +70,7 @@ export const getAll = async (req, res, next) => {
       },
     });
   } catch (error) {
-    res.status(500).json({ error: "Error fetching wishlist" });
+    res.status(500).json({ error: "Error fetching wishlist"});
   }
 };
 

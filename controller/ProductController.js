@@ -53,6 +53,8 @@ export const getProductsById = async (req, res, next) => {
       .populate("categoryId")
       .populate("subCategoryId")
       .populate("brandId")
+      .populate({ path: "platform", model: "Platform" })
+      .populate({ path: "region", model: "Region" })
       .populate("sellerId");
 
     res.json({
@@ -89,14 +91,17 @@ export const updateProducts = catchAsyncError(async (req, res, next) => {
 // Get All Products
 export const getAllProducts = catchAsyncError(async (req, res, next) => {
   try {
-    const page = parseInt(req.query.page) || 1; // Current page, default to 1
-    const limit = 10; // Number of blogs per page
-    const skip = (page - 1) * limit; // Calculate the number of documents to skip
+    const page = parseInt(req.query.page) || 1;
+    const limit = 10;
+    const skip = (page - 1) * limit;
     const products = await Products.find()
       .populate("categoryId")
       .populate("subCategoryId")
       .populate("brandId")
       .populate("sellerId")
+      .populate({ path: "platform", model: "Platform" })
+      .populate({ path: "region", model: "Region" })
+
       .skip(skip)
       .limit(limit);
     const totalproducts = await Products.countDocuments();
@@ -212,7 +217,7 @@ export const getProductbyCategorId = async (req, res, next) => {
 
 export const getProductbysubCategoryId = async (req, res, next) => {
   const categoryId = req?.params.subcategoryId;
-  const page = parseInt(req.query.page) || 1; // Get page number from query, default to 1
+  const page = parseInt(req.query.page) || 1;
   const limit = 12; // Limit per page
   const skip = (page - 1) * limit;
 
@@ -221,6 +226,7 @@ export const getProductbysubCategoryId = async (req, res, next) => {
       .populate("categoryId")
       .populate("subCategoryId")
       .populate("brandId")
+      .populate("regionId")
       .skip(skip)
       .limit(limit);
 

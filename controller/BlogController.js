@@ -94,48 +94,13 @@ export const updateBlog = catchAsyncError(async (req, res, next) => {
 // });
 export const getAllBlogs = catchAsyncError(async (req, res, next) => {
   try {
-    // Extract pagination parameters from query
-    const page = parseInt(req.query.page, 10) || 1; // Default to page 1
-    const limit = parseInt(req.query.limit, 10) || 10; // Default to 10 items per page
+    const page = parseInt(req.query.page, 10) || 1;
+    const limit = parseInt(req.query.limit, 10) || 10;
     const skip = (page - 1) * limit;
-
-    // Aggregation pipeline with pagination
     const blogs = await Blogs.aggregate([
-      // Lookup categories for each blog
-      {
-        $lookup: {
-          from: "categories",
-          localField: "categoryId",
-          foreignField: "_id",
-          as: "categories",
-        },
-      },
-      // Unwind categories array to process each category individually
-      { $unwind: { path: "$categories", preserveNullAndEmptyArrays: true } },
-      // Lookup subcategories for each category
-      {
-        $lookup: {
-          from: "subcategories",
-          localField: "categories._id",
-          foreignField: "categoryId",
-          as: "categories.subcategories",
-        },
-      },
-      // Re-group categories back into an array after subcategories lookup
-      {
-        $group: {
-          _id: "$_id",
-          title: { $first: "$title" },
-          content: { $first: "$content" },
-          categories: { $push: "$categories" },
-        },
-      },
-      // Pagination: skip and limit
       { $skip: skip },
       { $limit: limit },
     ]);
-
-    // Count total documents for pagination metadata
     const totalBlogs = await Blogs.countDocuments();
 
     res.status(200).json({

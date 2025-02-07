@@ -39,6 +39,14 @@ const productSchema = new Schema({
     type: String,
     require: true,
   },
+  stock: {
+    type: String,
+    require: true,
+  },
+  minStock: {
+    type: String,
+    require: false,
+  },
   description: {
     type: String,
     require: true,
@@ -47,7 +55,6 @@ const productSchema = new Schema({
     type: Date,
     default: Date.now,
   },
-
   status: {
     type: String,
     enum: ["pending", "approved"],
@@ -64,7 +71,7 @@ const productSchema = new Schema({
     type: mongoose.Schema.Types.ObjectId,
     ref: "region",
   },
-  stock: {
+  stockStatus: {
     type: String,
     enum: ["In Stock", "Out Of Stock"],
   },
