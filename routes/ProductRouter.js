@@ -12,6 +12,8 @@ import {
   getBestSellers,
   getProductsBySellerId,
   updateProducts,
+  getAccountProducts,
+  getMicrosoftProducts,
 } from "../controller/ProductController.js";
 const productRouter = express.Router();
 
@@ -30,4 +32,6 @@ productRouter
 productRouter.route("/delete/:id").delete(deleteproductsById);
 productRouter.route("/update/:id").put(updateProducts);
 productRouter.route("/getBestSellers").get(getBestSellers);
+productRouter.route("/getProductByAccount").get(getAccountProducts);
+productRouter.route("/getProductByMicrosoft").get(getMicrosoftProducts);
 export default productRouter;

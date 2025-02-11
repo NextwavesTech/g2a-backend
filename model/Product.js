@@ -75,6 +75,9 @@ const productSchema = new Schema({
     type: String,
     enum: ["In Stock", "Out Of Stock"],
   },
+  likes:{
+    type:Array
+  }
 });
 
 productSchema.pre("save", function (next) {

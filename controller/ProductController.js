@@ -465,3 +465,59 @@ export const getBestSellers = async (req, res) => {
     });
   }
 };
+
+
+export const getAccountProducts = catchAsyncError(async (req, res, next) => {
+  try {
+    const page = parseInt(req.query.page, 10) || 1;
+    const limit = 4;
+    const skip = (page - 1) * limit;
+
+    const products = await Products.find({ type: "account" })
+      .skip(skip)
+      .limit(limit);
+
+    const totalItems = await Products.countDocuments({ type: "account" });
+    
+    res.json({
+      status: "success",
+      data: products,
+      pagination: {
+        totalItems,
+        currentPage: page,
+        limit,
+        totalPages: Math.ceil(totalItems / limit),
+      },
+    });
+  } catch (error) {
+    res.status(500).json({ error: "Error fetching account products" });
+  }
+});
+
+
+export const getMicrosoftProducts = catchAsyncError(async (req, res, next) => {
+  try {
+    const page = parseInt(req.query.page, 10) || 1;
+    const limit = 4;
+    const skip = (page - 1) * limit;
+
+    const products = await Products.find({ platform: "Microsoft" })
+      .skip(skip)
+      .limit(limit);
+
+    const totalItems = await Products.countDocuments({ platform: "Microsoft" });
+    
+    res.json({
+      status: "success",
+      data: products,
+      pagination: {
+        totalItems,
+        currentPage: page,
+        limit,
+        totalPages: Math.ceil(totalItems / limit),
+      },
+    });
+  } catch (error) {
+    res.status(500).json({ error: "Error fetching Microsoft products" });
+  }
+});
