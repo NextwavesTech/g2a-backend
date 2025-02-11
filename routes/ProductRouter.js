@@ -13,7 +13,7 @@ import {
   getProductsBySellerId,
   updateProducts,
   getAccountProducts,
-  getMicrosoftProducts,
+  getMicrosoftProducts,getKeysProducts
 } from "../controller/ProductController.js";
 const productRouter = express.Router();
 
@@ -34,4 +34,5 @@ productRouter.route("/update/:id").put(updateProducts);
 productRouter.route("/getBestSellers").get(getBestSellers);
 productRouter.route("/getProductByAccount").get(getAccountProducts);
 productRouter.route("/getProductByMicrosoft").get(getMicrosoftProducts);
+productRouter.route("/getProductByKey").get(getKeysProducts);
 export default productRouter;
