@@ -483,6 +483,36 @@ export const getAccountProducts = catchAsyncError(async (req, res, next) => {
 });
 
 
+export const getKeysProducts = catchAsyncError(async (req, res, next) => {
+  try {
+    const page = parseInt(req.query.page, 10) || 1;
+    const limit = 6;
+    const skip = (page - 1) * limit;
+
+    const products = await Products.find({ type: "key" })
+     
+      .skip(skip)
+      .limit(limit);
+
+    // Remove products where platform does not match "Microsoft"
+    // const filteredProducts = products.filter(product => product.platform !== null);
+
+    const totalItems = await Products.countDocuments({ type: "key" });
+
+    res.json({
+      status: "success",
+      data: products,
+      pagination: {
+        totalItems: totalItems,
+        currentPage: page,
+        limit,
+        totalPages: Math.ceil(totalItems / limit),
+      },
+    });
+  } catch (error) {
+    res.status(500).json({ error: "Error fetching Microsoft products" });
+  }
+});
 
 export const getMicrosoftProducts = catchAsyncError(async (req, res, next) => {
   try {
