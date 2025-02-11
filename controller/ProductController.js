@@ -307,11 +307,11 @@ export const deleteproductsById = async (req, res, next) => {
 
 export const getProductsByCategory = async (req, res, next) => {
   try {
-    const page = parseInt(req.query.page, 10) || 1;
-    const limit = parseInt(req.query.limit, 10) || 10;
+    const page = parseInt(req.query.page, 6) || 1;
+    const limit = parseInt(req.query.limit, 6) || 6;
 
-    const productPage = parseInt(req.query.productPage, 10) || 1;
-    const productLimit = parseInt(req.query.productLimit, 10) || 10;
+    const productPage = parseInt(req.query.productPage, 6) || 1;
+    const productLimit = parseInt(req.query.productLimit, 6) || 6;
     const productSkip = (productPage - 1) * productLimit;
 
     const skip = (page - 1) * limit;
