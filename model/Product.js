@@ -62,7 +62,7 @@ const productSchema = new Schema({
   },
   platform: {
     type: mongoose.Schema.Types.ObjectId,
-    ref: "platform",
+    ref: "Platform",
   },
   type: {
     type: String,
