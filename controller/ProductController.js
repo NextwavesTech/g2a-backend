@@ -360,18 +360,38 @@ export const deleteproductsById = async (req, res, next) => {
 
 export const getProductsByCategory = async (req, res, next) => {
   try {
-    const page = parseInt(req.query.page, 6) || 1;
-    const limit = parseInt(req.query.limit, 6) || 6;
+    const page = parseInt(req.query.page) || 1;
+    const limit = parseInt(req.query.limit) || 6;
 
-    const productPage = parseInt(req.query.productPage, 6) || 1;
-    const productLimit = parseInt(req.query.productLimit, 6) || 6;
+    const productPage = parseInt(req.query.productPage) || 1;
+    const productLimit = parseInt(req.query.productLimit) || 6;
     const productSkip = (productPage - 1) * productLimit;
-
     const skip = (page - 1) * limit;
 
-   
+    // Extract filters from query parameters
+    const title = req.query.title ? new RegExp(req.query.title, "i") : null;
+    const categoryId = req.query.categoryId ? req.query.categoryId : null;
+    const platformId = req.query.platformId ? req.query.platformId : null;
+    const regionId = req.query.regionId ? req.query.regionId : null;
+    const type = req.query.type ? req.query.type : null;
+    const minPrice = parseFloat(req.query.minPrice) || 0;
+    const maxPrice = parseFloat(req.query.maxPrice) || Infinity;
+
+    // Construct the match stage for filtering
+    let matchStage = {};
+
+    if (title) matchStage.title = title;
+    if (categoryId) matchStage.categoryId = categoryId;
+    if (platformId) matchStage.platform = platformId;
+    if (regionId) matchStage.region = regionId;
+    if (type) matchStage.type = type;
+
+    // Filter price range if min or max price is provided
+    matchStage.discountPrice = { $gte: minPrice, $lte: maxPrice };
+
     const products = await Products.aggregate([
-    
+      { $match: matchStage }, // Apply all filters
+
       {
         $lookup: {
           from: "brands",
@@ -382,7 +402,6 @@ export const getProductsByCategory = async (req, res, next) => {
       },
       { $unwind: { path: "$brand", preserveNullAndEmptyArrays: true } },
 
-     
       {
         $lookup: {
           from: "midcategories",
@@ -393,7 +412,6 @@ export const getProductsByCategory = async (req, res, next) => {
       },
       { $unwind: { path: "$category", preserveNullAndEmptyArrays: true } },
 
-     
       {
         $lookup: {
           from: "subcategories",
@@ -404,7 +422,6 @@ export const getProductsByCategory = async (req, res, next) => {
       },
       { $unwind: { path: "$subCategory", preserveNullAndEmptyArrays: true } },
 
-     
       {
         $group: {
           _id: "$brand._id",
@@ -414,7 +431,6 @@ export const getProductsByCategory = async (req, res, next) => {
         },
       },
 
-     
       {
         $project: {
           _id: 1,
@@ -422,12 +438,11 @@ export const getProductsByCategory = async (req, res, next) => {
           totalProducts: 1,
           totalProductPages: { $ceil: { $divide: ["$totalProducts", productLimit] } },
           productPage: { $literal: productPage },
-          productLimit: { $literal: productLimit }, 
+          productLimit: { $literal: productLimit },
           products: { $slice: ["$products", productSkip, productLimit] },
         },
       },
 
-      // Pagination for brands
       { $skip: skip },
       { $limit: limit },
     ]);
@@ -435,7 +450,6 @@ export const getProductsByCategory = async (req, res, next) => {
     // Count total brands
     const totalBrands = await Products.distinct("brandId").then((res) => res.length);
 
-    // Send response
     res.status(200).json({
       status: "success",
       data: products,
@@ -450,6 +464,7 @@ export const getProductsByCategory = async (req, res, next) => {
     next(error);
   }
 };
+
 
 
 
