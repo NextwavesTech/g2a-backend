@@ -226,7 +226,7 @@ export const getProductbysubCategoryId = async (req, res, next) => {
       .populate("categoryId")
       .populate("subCategoryId")
       .populate("brandId")
-      .populate("regionId")
+      .populate("region")
       .skip(skip)
       .limit(limit);
 

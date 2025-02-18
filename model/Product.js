@@ -69,7 +69,7 @@ const productSchema = new Schema({
   },
   region: {
     type: mongoose.Schema.Types.ObjectId,
-    ref: "region",
+    ref: "Region",
   },
   stockStatus: {
     type: String,
