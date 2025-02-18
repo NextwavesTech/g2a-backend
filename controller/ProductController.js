@@ -143,99 +143,40 @@ export const searchProduct = catchAsyncError(async (req, res, next) => {
   }
 });
 export const getProductbybrandId = async (req, res, next) => {
-  const brandId = req?.params.brandId;
-  const page = parseInt(req.query.page) || 1; // Get page number from query, default to 1
-  const limit = 12; // Limit per page
+  const { brandId } = req.params;
+  const { page = 1, categoryId, platform, minPrice, maxPrice, type, region, title } = req.query;
+  const limit = 12;
   const skip = (page - 1) * limit;
 
   try {
-    const data = await Products.find({ brandId: brandId })
+    let filter = { brandId };
+
+    if (categoryId) filter.categoryId = categoryId;
+    if (platform) filter.platform = platform;
+    if (type) filter.type = type;
+    if (region) filter.region = region;
+    if (title) filter.title = new RegExp(title, "i"); // Case-insensitive search
+    if (minPrice || maxPrice) {
+      filter.discountPrice = {};
+      if (minPrice) filter.discountPrice.$gte = parseFloat(minPrice);
+      if (maxPrice) filter.discountPrice.$lte = parseFloat(maxPrice);
+    }
+
+    const data = await Products.find(filter)
       .populate("categoryId")
       .populate("subCategoryId")
       .populate("brandId")
-      .skip(skip)
-      .limit(limit);
-
-    const total = await Products.countDocuments({ brandId: brandId });
-    const totalPages = Math.ceil(total / limit);
-
-    res.json({
-      status: "success",
-      data: data,
-      pagination: {
-        total,
-        totalPages,
-        currentPage: page,
-        hasNextPage: page < totalPages,
-        hasPrevPage: page > 1,
-      },
-    });
-  } catch (error) {
-    console.log(error);
-    res.status(500).json({
-      status: "fail",
-      error: "Internal Server Error",
-    });
-  }
-};
-export const getProductbyCategorId = async (req, res, next) => {
-  const categoryId = req?.params.categoryId;
-  const page = parseInt(req.query.page) || 1; // Get page number from query, default to 1
-  const limit = 12; // Limit per page
-  const skip = (page - 1) * limit;
-
-  try {
-    const data = await Products.find({ categoryId: categoryId })
-      .populate("categoryId")
-      .populate("subCategoryId")
-      .populate("brandId")
-      .skip(skip)
-      .limit(limit);
-
-    const total = await Products.countDocuments({ categoryId: categoryId });
-    const totalPages = Math.ceil(total / limit);
-
-    res.json({
-      status: "success",
-      data: data,
-      pagination: {
-        total,
-        totalPages,
-        currentPage: page,
-        hasNextPage: page < totalPages,
-        hasPrevPage: page > 1,
-      },
-    });
-  } catch (error) {
-    console.log(error);
-    res.status(500).json({
-      status: "fail",
-      error: "Internal Server Error",
-    });
-  }
-};
-
-export const getProductbysubCategoryId = async (req, res, next) => {
-  const categoryId = req?.params.subcategoryId;
-  const page = parseInt(req.query.page) || 1;
-  const limit = 12; // Limit per page
-  const skip = (page - 1) * limit;
-
-  try {
-    const data = await Products.find({ subCategoryId: categoryId })
-      .populate("categoryId")
-      .populate("subCategoryId")
-      .populate("brandId")
+      .populate("platform")
       .populate("region")
       .skip(skip)
       .limit(limit);
 
-    const total = await Products.countDocuments({ subCategoryId: categoryId });
+    const total = await Products.countDocuments(filter);
     const totalPages = Math.ceil(total / limit);
 
     res.json({
       status: "success",
-      data: data,
+      data,
       pagination: {
         total,
         totalPages,
@@ -246,30 +187,140 @@ export const getProductbysubCategoryId = async (req, res, next) => {
     });
   } catch (error) {
     console.log(error);
-    res.status(500).json({
-      status: "fail",
-      error: "Internal Server Error",
-    });
+    res.status(500).json({ status: "fail", error: "Internal Server Error" });
   }
 };
 
-// Get Products by sellerId
-
-export const getProductsBySellerId = async (req, res, next) => {
-  const sellerId = req.params.sellerId;
-  const page = parseInt(req.query.page) || 1; // Get page number from query, default to 1
-  const limit = 12; // Limit per page
+export const getProductbyCategorId = async (req, res, next) => {
+  const { categoryId } = req.params;
+  const { page = 1, platform, minPrice, maxPrice, type, region, title } = req.query;
+  const limit = 12;
   const skip = (page - 1) * limit;
+
   try {
-    const products = await Products.find({ sellerId: sellerId })
+    let filter = { categoryId };
+
+    if (platform) filter.platform = platform;
+    if (type) filter.type = type;
+    if (region) filter.region = region;
+    if (title) filter.title = new RegExp(title, "i");
+    if (minPrice || maxPrice) {
+      filter.discountPrice = {};
+      if (minPrice) filter.discountPrice.$gte = parseFloat(minPrice);
+      if (maxPrice) filter.discountPrice.$lte = parseFloat(maxPrice);
+    }
+
+    const data = await Products.find(filter)
+      .populate("categoryId")
+      .populate("subCategoryId")
+      .populate("brandId")
+      .populate("platform")
+      .populate("region")
+      .skip(skip)
+      .limit(limit);
+
+    const total = await Products.countDocuments(filter);
+    const totalPages = Math.ceil(total / limit);
+
+    res.json({
+      status: "success",
+      data,
+      pagination: {
+        total,
+        totalPages,
+        currentPage: page,
+        hasNextPage: page < totalPages,
+        hasPrevPage: page > 1,
+      },
+    });
+  } catch (error) {
+    console.log(error);
+    res.status(500).json({ status: "fail", error: "Internal Server Error" });
+  }
+};
+
+export const getProductbysubCategoryId = async (req, res, next) => {
+  const { subcategoryId } = req.params;
+  const { page = 1, platform, minPrice, maxPrice, type, region, title } = req.query;
+  const limit = 12;
+  const skip = (page - 1) * limit;
+
+  try {
+    let filter = { subCategoryId: subcategoryId };
+
+    if (platform) filter.platform = platform;
+    if (type) filter.type = type;
+    if (region) filter.region = region;
+    if (title) filter.title = new RegExp(title, "i");
+    if (minPrice || maxPrice) {
+      filter.discountPrice = {};
+      if (minPrice) filter.discountPrice.$gte = parseFloat(minPrice);
+      if (maxPrice) filter.discountPrice.$lte = parseFloat(maxPrice);
+    }
+
+    const data = await Products.find(filter)
+      .populate("categoryId")
+      .populate("subCategoryId")
+      .populate("brandId")
+      .populate("platform")
+      .populate("region")
+      .skip(skip)
+      .limit(limit);
+
+    const total = await Products.countDocuments(filter);
+    const totalPages = Math.ceil(total / limit);
+
+    res.json({
+      status: "success",
+      data,
+      pagination: {
+        total,
+        totalPages,
+        currentPage: page,
+        hasNextPage: page < totalPages,
+        hasPrevPage: page > 1,
+      },
+    });
+  } catch (error) {
+    console.log(error);
+    res.status(500).json({ status: "fail", error: "Internal Server Error" });
+  }
+};
+
+// Get Products by sellerId with filters
+export const getProductsBySellerId = async (req, res, next) => {
+  const { sellerId } = req.params;
+  const { page = 1, categoryId, platform, minPrice, maxPrice, type, region, title } = req.query;
+  const limit = 12;
+  const skip = (page - 1) * limit;
+
+  try {
+    let filter = { sellerId };
+
+    if (categoryId) filter.categoryId = categoryId;
+    if (platform) filter.platform = platform;
+    if (type) filter.type = type;
+    if (region) filter.region = region;
+    if (title) filter.title = new RegExp(title, "i");
+    if (minPrice || maxPrice) {
+      filter.discountPrice = {};
+      if (minPrice) filter.discountPrice.$gte = parseFloat(minPrice);
+      if (maxPrice) filter.discountPrice.$lte = parseFloat(maxPrice);
+    }
+
+    const products = await Products.find(filter)
       .populate("categoryId")
       .populate("subCategoryId")
       .populate("brandId")
       .populate("sellerId")
+      .populate("platform")
+      .populate("region")
       .skip(skip)
       .limit(limit);
-    const total = await Products.countDocuments({ sellerId: sellerId });
+
+    const total = await Products.countDocuments(filter);
     const totalPages = Math.ceil(total / limit);
+
     res.json({
       status: "success",
       data: products,
@@ -283,9 +334,11 @@ export const getProductsBySellerId = async (req, res, next) => {
     });
   } catch (error) {
     console.log(error);
-    res.status(500).json({ status: "fail", message: "Internal Server Error" });
+    res.status(500).json({ status: "fail", error: "Internal Server Error" });
   }
 };
+
+
 
 // delete products
 export const deleteproductsById = async (req, res, next) => {
