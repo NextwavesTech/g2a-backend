@@ -142,11 +142,27 @@ export const searchProduct = catchAsyncError(async (req, res, next) => {
     res.status(500).json({ error: "Failed to fetch products" });
   }
 });
+const getSortOption = (sort) => {
+  switch (sort) {
+    case "releaseDate-asc":
+      return { createdAt: 1 }; // Oldest first
+    case "releaseDate-desc":
+      return { createdAt: -1 }; // Newest first
+    case "price-asc":
+      return { discountPrice: 1 }; // Lowest price first
+    case "price-desc":
+      return { discountPrice: -1 }; // Highest price first
+    default:
+      return { createdAt: -1 }; // Default: Newest first
+  }
+};
+
 export const getProductbybrandId = async (req, res, next) => {
   const { brandId } = req.params;
-  const { page = 1, categoryId, platform, minPrice, maxPrice, type, region, title } = req.query;
+  const { page = 1, categoryId, platform, minPrice, maxPrice, type, region, title, sort } = req.query;
   const limit = 12;
   const skip = (page - 1) * limit;
+  const sortOption = getSortOption(sort);
 
   try {
     let filter = { brandId };
@@ -155,7 +171,7 @@ export const getProductbybrandId = async (req, res, next) => {
     if (platform) filter.platform = platform;
     if (type) filter.type = type;
     if (region) filter.region = region;
-    if (title) filter.title = new RegExp(title, "i"); // Case-insensitive search
+    if (title) filter.title = new RegExp(title, "i");
     if (minPrice || maxPrice) {
       filter.discountPrice = {};
       if (minPrice) filter.discountPrice.$gte = parseFloat(minPrice);
@@ -168,6 +184,7 @@ export const getProductbybrandId = async (req, res, next) => {
       .populate("brandId")
       .populate("platform")
       .populate("region")
+      .sort(sortOption) // Apply sorting
       .skip(skip)
       .limit(limit);
 
@@ -186,16 +203,17 @@ export const getProductbybrandId = async (req, res, next) => {
       },
     });
   } catch (error) {
-    console.log(error);
     res.status(500).json({ status: "fail", error: "Internal Server Error" });
   }
 };
 
+// Repeat the same logic for other functions
 export const getProductbyCategorId = async (req, res, next) => {
   const { categoryId } = req.params;
-  const { page = 1, platform, minPrice, maxPrice, type, region, title } = req.query;
+  const { page = 1, platform, minPrice, maxPrice, type, region, title, sort } = req.query;
   const limit = 12;
   const skip = (page - 1) * limit;
+  const sortOption = getSortOption(sort);
 
   try {
     let filter = { categoryId };
@@ -216,6 +234,7 @@ export const getProductbyCategorId = async (req, res, next) => {
       .populate("brandId")
       .populate("platform")
       .populate("region")
+      .sort(sortOption) // Apply sorting
       .skip(skip)
       .limit(limit);
 
@@ -234,16 +253,17 @@ export const getProductbyCategorId = async (req, res, next) => {
       },
     });
   } catch (error) {
-    console.log(error);
     res.status(500).json({ status: "fail", error: "Internal Server Error" });
   }
 };
 
+// Same sorting added to getProductbysubCategoryId
 export const getProductbysubCategoryId = async (req, res, next) => {
   const { subcategoryId } = req.params;
-  const { page = 1, platform, minPrice, maxPrice, type, region, title } = req.query;
+  const { page = 1, platform, minPrice, maxPrice, type, region, title, sort } = req.query;
   const limit = 12;
   const skip = (page - 1) * limit;
+  const sortOption = getSortOption(sort);
 
   try {
     let filter = { subCategoryId: subcategoryId };
@@ -264,6 +284,7 @@ export const getProductbysubCategoryId = async (req, res, next) => {
       .populate("brandId")
       .populate("platform")
       .populate("region")
+      .sort(sortOption) // Apply sorting
       .skip(skip)
       .limit(limit);
 
@@ -282,17 +303,17 @@ export const getProductbysubCategoryId = async (req, res, next) => {
       },
     });
   } catch (error) {
-    console.log(error);
     res.status(500).json({ status: "fail", error: "Internal Server Error" });
   }
 };
 
-// Get Products by sellerId with filters
+// Same sorting added to getProductsBySellerId
 export const getProductsBySellerId = async (req, res, next) => {
   const { sellerId } = req.params;
-  const { page = 1, categoryId, platform, minPrice, maxPrice, type, region, title } = req.query;
+  const { page = 1, categoryId, platform, minPrice, maxPrice, type, region, title, sort } = req.query;
   const limit = 12;
   const skip = (page - 1) * limit;
+  const sortOption = getSortOption(sort);
 
   try {
     let filter = { sellerId };
@@ -315,6 +336,7 @@ export const getProductsBySellerId = async (req, res, next) => {
       .populate("sellerId")
       .populate("platform")
       .populate("region")
+      .sort(sortOption) // Apply sorting
       .skip(skip)
       .limit(limit);
 
@@ -333,10 +355,204 @@ export const getProductsBySellerId = async (req, res, next) => {
       },
     });
   } catch (error) {
-    console.log(error);
     res.status(500).json({ status: "fail", error: "Internal Server Error" });
   }
 };
+
+// export const getProductbybrandId = async (req, res, next) => {
+//   const { brandId } = req.params;
+//   const { page = 1, categoryId, platform, minPrice, maxPrice, type, region, title } = req.query;
+//   const limit = 12;
+//   const skip = (page - 1) * limit;
+
+//   try {
+//     let filter = { brandId };
+
+//     if (categoryId) filter.categoryId = categoryId;
+//     if (platform) filter.platform = platform;
+//     if (type) filter.type = type;
+//     if (region) filter.region = region;
+//     if (title) filter.title = new RegExp(title, "i"); // Case-insensitive search
+//     if (minPrice || maxPrice) {
+//       filter.discountPrice = {};
+//       if (minPrice) filter.discountPrice.$gte = parseFloat(minPrice);
+//       if (maxPrice) filter.discountPrice.$lte = parseFloat(maxPrice);
+//     }
+
+//     const data = await Products.find(filter)
+//       .populate("categoryId")
+//       .populate("subCategoryId")
+//       .populate("brandId")
+//       .populate("platform")
+//       .populate("region")
+//       .skip(skip)
+//       .limit(limit);
+
+//     const total = await Products.countDocuments(filter);
+//     const totalPages = Math.ceil(total / limit);
+
+//     res.json({
+//       status: "success",
+//       data,
+//       pagination: {
+//         total,
+//         totalPages,
+//         currentPage: page,
+//         hasNextPage: page < totalPages,
+//         hasPrevPage: page > 1,
+//       },
+//     });
+//   } catch (error) {
+//     console.log(error);
+//     res.status(500).json({ status: "fail", error: "Internal Server Error" });
+//   }
+// };
+
+// export const getProductbyCategorId = async (req, res, next) => {
+//   const { categoryId } = req.params;
+//   const { page = 1, platform, minPrice, maxPrice, type, region, title } = req.query;
+//   const limit = 12;
+//   const skip = (page - 1) * limit;
+
+//   try {
+//     let filter = { categoryId };
+
+//     if (platform) filter.platform = platform;
+//     if (type) filter.type = type;
+//     if (region) filter.region = region;
+//     if (title) filter.title = new RegExp(title, "i");
+//     if (minPrice || maxPrice) {
+//       filter.discountPrice = {};
+//       if (minPrice) filter.discountPrice.$gte = parseFloat(minPrice);
+//       if (maxPrice) filter.discountPrice.$lte = parseFloat(maxPrice);
+//     }
+
+//     const data = await Products.find(filter)
+//       .populate("categoryId")
+//       .populate("subCategoryId")
+//       .populate("brandId")
+//       .populate("platform")
+//       .populate("region")
+//       .skip(skip)
+//       .limit(limit);
+
+//     const total = await Products.countDocuments(filter);
+//     const totalPages = Math.ceil(total / limit);
+
+//     res.json({
+//       status: "success",
+//       data,
+//       pagination: {
+//         total,
+//         totalPages,
+//         currentPage: page,
+//         hasNextPage: page < totalPages,
+//         hasPrevPage: page > 1,
+//       },
+//     });
+//   } catch (error) {
+//     console.log(error);
+//     res.status(500).json({ status: "fail", error: "Internal Server Error" });
+//   }
+// };
+
+// export const getProductbysubCategoryId = async (req, res, next) => {
+//   const { subcategoryId } = req.params;
+//   const { page = 1, platform, minPrice, maxPrice, type, region, title } = req.query;
+//   const limit = 12;
+//   const skip = (page - 1) * limit;
+
+//   try {
+//     let filter = { subCategoryId: subcategoryId };
+
+//     if (platform) filter.platform = platform;
+//     if (type) filter.type = type;
+//     if (region) filter.region = region;
+//     if (title) filter.title = new RegExp(title, "i");
+//     if (minPrice || maxPrice) {
+//       filter.discountPrice = {};
+//       if (minPrice) filter.discountPrice.$gte = parseFloat(minPrice);
+//       if (maxPrice) filter.discountPrice.$lte = parseFloat(maxPrice);
+//     }
+
+//     const data = await Products.find(filter)
+//       .populate("categoryId")
+//       .populate("subCategoryId")
+//       .populate("brandId")
+//       .populate("platform")
+//       .populate("region")
+//       .skip(skip)
+//       .limit(limit);
+
+//     const total = await Products.countDocuments(filter);
+//     const totalPages = Math.ceil(total / limit);
+
+//     res.json({
+//       status: "success",
+//       data,
+//       pagination: {
+//         total,
+//         totalPages,
+//         currentPage: page,
+//         hasNextPage: page < totalPages,
+//         hasPrevPage: page > 1,
+//       },
+//     });
+//   } catch (error) {
+//     console.log(error);
+//     res.status(500).json({ status: "fail", error: "Internal Server Error" });
+//   }
+// };
+
+// export const getProductsBySellerId = async (req, res, next) => {
+//   const { sellerId } = req.params;
+//   const { page = 1, categoryId, platform, minPrice, maxPrice, type, region, title } = req.query;
+//   const limit = 12;
+//   const skip = (page - 1) * limit;
+
+//   try {
+//     let filter = { sellerId };
+
+//     if (categoryId) filter.categoryId = categoryId;
+//     if (platform) filter.platform = platform;
+//     if (type) filter.type = type;
+//     if (region) filter.region = region;
+//     if (title) filter.title = new RegExp(title, "i");
+//     if (minPrice || maxPrice) {
+//       filter.discountPrice = {};
+//       if (minPrice) filter.discountPrice.$gte = parseFloat(minPrice);
+//       if (maxPrice) filter.discountPrice.$lte = parseFloat(maxPrice);
+//     }
+
+//     const products = await Products.find(filter)
+//       .populate("categoryId")
+//       .populate("subCategoryId")
+//       .populate("brandId")
+//       .populate("sellerId")
+//       .populate("platform")
+//       .populate("region")
+//       .skip(skip)
+//       .limit(limit);
+
+//     const total = await Products.countDocuments(filter);
+//     const totalPages = Math.ceil(total / limit);
+
+//     res.json({
+//       status: "success",
+//       data: products,
+//       pagination: {
+//         total,
+//         totalPages,
+//         currentPage: page,
+//         hasNextPage: page < totalPages,
+//         hasPrevPage: page > 1,
+//       },
+//     });
+//   } catch (error) {
+//     console.log(error);
+//     res.status(500).json({ status: "fail", error: "Internal Server Error" });
+//   }
+// };
 
 
 
