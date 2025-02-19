@@ -103,6 +103,23 @@ export const getAllCategory = catchAsyncError(async (req, res, next) => {
   }
 });
 
+export const getallcategoryByBrandId = catchAsyncError (async (req,res,next)=>{
+  const brandId = req.params.brandId;
+  try {
+      const categories = await MidCategory.find({brandId:brandId})
+  
+      res.status(200).json({
+        status: "success",
+        data: categories,
+      });
+    } catch (error) {
+      console.error("Error fetching categories:", error);
+      res.status(500).json({
+        status: "fail",
+        error: "Internal Server Error",
+      });
+    }
+})
 export const getallcategoryforAdmin = catchAsyncError (async (req,res,next)=>{
     try {
         const categories = await MidCategory.find().populate('brandId')
