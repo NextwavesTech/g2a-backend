@@ -81,6 +81,22 @@ export const getAllSubCategory = catchAsyncError(async (req, res, next) => {
         });
     }
 });
+export const getCategoryById = catchAsyncError(async (req, res, next) => {
+    const categoryId = req?.params.id;
+    try {
+        const subcategory = await SubCategory.find({categoryId:categoryId})
+        res.status(200).json({
+            status: "success",
+            data: subcategory,
+        });
+    } catch (error) {
+        console.error("Error fetching users:", error);
+        res.status(500).json({
+            status: "fail",
+            error: "Internal Server Error",
+        });
+    }
+});
 // delete SubCategory
 export const deleteSubCategoryById = async (req, res, next) => {
     const id = req.params.id;
