@@ -372,7 +372,7 @@ export const getProductsByCategory = async (req, res, next) => {
     const title = req.query.title ? new RegExp(req.query.title, "i") : null;
     const categoryId = req.query.categoryId ? req.query.categoryId : null;
     const platformId = req.query.platformId ? req.query.platformId : null;
-    const regionId = req.query.regionId ? req.query.regionId : null;
+    const region = req.query.region ? req.query.region : null;
     const type = req.query.type ? req.query.type : null;
     const minPrice = parseFloat(req.query.minPrice) || 0;
     const maxPrice = parseFloat(req.query.maxPrice) || Infinity;
@@ -383,11 +383,14 @@ export const getProductsByCategory = async (req, res, next) => {
     if (title) matchStage.title = title;
     if (categoryId) matchStage.categoryId = categoryId;
     if (platformId) matchStage.platform = platformId;
-    if (regionId) matchStage.region = regionId;
+    if (region) matchStage.region = region;
     if (type) matchStage.type = type;
 
     // Filter price range if min or max price is provided
-    matchStage.discountPrice = { $gte: minPrice, $lte: maxPrice };
+    matchStage.discountPrice = {
+      $gte: minPrice.toString(),
+      $lte: maxPrice.toString(),
+    };
 
     const products = await Products.aggregate([
       { $match: matchStage }, // Apply all filters
