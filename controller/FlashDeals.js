@@ -88,43 +88,52 @@ export const getFlashDeals = async (req, res) => {
 export const approveFlashDeals = async (req, res) => {
   try {
     const { id } = req.params;
+    const { status } = req.body; // Get status from request body
 
-    // First, find the FlashDeals document to ensure it exists
-    const flashDeals = await FlashDeals.findById(id);
-    if (!flashDeals) {
-      return res.status(404).json({
+    if (!["pending", "approved"].includes(status)) {
+      return res.status(400).json({
         status: "fail",
-        message: "Flash Deals not found!",
+        message: "Invalid status! Status must be 'pending' or 'approved'.",
       });
     }
 
-    // Set all other FlashDeals to "pending"
-    await FlashDeals.updateMany(
-      { _id: { $ne: id } }, // Update all documents except the current one
-      { status: "pending" }
-    );
+    // First, find the FlashDeal to ensure it exists
+    const flashDeal = await FlashDeals.findById(id);
+    if (!flashDeal) {
+      return res.status(404).json({
+        status: "fail",
+        message: "Flash Deal not found!",
+      });
+    }
 
-    // Approve the selected FlashDeals
-    const approvedFlashDeals = await FlashDeals.findByIdAndUpdate(
+    // If setting to "approved", change all others to "pending"
+    if (status === "approved") {
+      await FlashDeals.updateMany(
+        { _id: { $ne: id } }, // Exclude the current one
+        { status: "pending" }
+      );
+    }
+
+    // Update the selected FlashDeal
+    const updatedFlashDeal = await FlashDeals.findByIdAndUpdate(
       id,
-      { status: "approved" },
+      { status },
       { new: true }
     );
 
-    // Respond with the updated FlashDeals
     res.status(200).json({
       status: "success",
-      message: "Flash Deals approved successfully!",
-      data: approvedFlashDeals,
+      message: `Flash Deal status updated to '${status}' successfully!`,
+      data: updatedFlashDeal,
     });
   } catch (error) {
-    // Handle unexpected errors
     res.status(500).json({
       status: "error",
       message: error.message,
     });
   }
 };
+
 
 export const addProductToFlashDeals = async (req, res) => {
   try {
