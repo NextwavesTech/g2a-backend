@@ -93,3 +93,44 @@ export const deleteCheckoutById = async (req, res, next) => {
     next(error);
   }
 };
+export const getUserCheckouts = async (req, res) => {
+  try {
+    const { userId } = req.params; // Get userId from URL params
+    const { page = 1, limit = 10 } = req.query;
+
+    const skip = (page - 1) * limit;
+
+    const checkouts = await Checkout.find({ userId })
+      .populate({
+        path: "productIds",
+        model: "Products",
+        populate: [
+          { path: "categoryId", model: "Category" },
+          { path: "brandId", model: "Brand" },
+          { path: "platform", model: "Platform" },
+          { path: "region", model: "Region" }
+        ]
+      }) // Fully populate products with category, brand, platform, and region
+      .skip(skip)
+      .limit(parseInt(limit))
+      .sort({ createdAt: -1 });
+
+    const totalCheckouts = await Checkout.countDocuments({ userId });
+    const totalPages = Math.ceil(totalCheckouts / limit);
+
+    res.status(200).json({
+      status: "success",
+      data: checkouts,
+      pagination: {
+        total: totalCheckouts,
+        totalPages,
+        currentPage: page,
+        hasNextPage: page < totalPages,
+        hasPrevPage: page > 1,
+      },
+    });
+  } catch (error) {
+    console.error("Error fetching checkouts:", error);
+    res.status(500).json({ status: "fail", error: "Internal Server Error" });
+  }
+};

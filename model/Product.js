@@ -30,7 +30,10 @@ const productSchema = new Schema({
     type: String,
     require: true,
   },
-
+  key: {
+    type: String,
+    default: null,
+  },
   discountPrice: {
     type: String,
     require: true,
@@ -45,7 +48,7 @@ const productSchema = new Schema({
   },
   minStock: {
     type: String,
-    default:0,
+    default: 0,
   },
   description: {
     type: String,
@@ -75,9 +78,9 @@ const productSchema = new Schema({
     type: String,
     enum: ["In Stock", "Out Of Stock"],
   },
-  likes:{
-    type:Array
-  }
+  likes: {
+    type: Array,
+  },
 });
 
 productSchema.pre("save", function (next) {
@@ -88,6 +91,5 @@ productSchema.pre("save", function (next) {
   }
   next();
 });
-
 
 export const Products = mongoose.model("Products", productSchema);

@@ -22,6 +22,10 @@ const checkoutSchema = new Schema({
     type: String,
     require: true,
   },
+  userId:{
+    type: mongoose.Schema.Types.ObjectId,
+    ref: "User",
+  },
   delivery: { type: Object, require: true },
   productIds: [ // Updated field to handle multiple products
     {
