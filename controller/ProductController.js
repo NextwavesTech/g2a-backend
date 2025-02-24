@@ -1,5 +1,6 @@
 import { catchAsyncError } from "../middleware/catchAsyncError.js";
 import { Products } from "../model/Product.js";
+import {Platform} from '../model/Platform.js'
 // import { Category } from "../model/category.js";
 import cloudinary from "cloudinary";
 import { Rating } from "../model/rating.js";
@@ -94,23 +95,55 @@ export const getAllProducts = catchAsyncError(async (req, res, next) => {
     const page = parseInt(req.query.page) || 1;
     const limit = 10;
     const skip = (page - 1) * limit;
-    const products = await Products.find()
+    const sortOption = getSortOption(req.query.sort);
+
+    let filter = {};
+
+    // Apply filters
+    if (req.query.categoryId) filter.categoryId = req.query.categoryId;
+    if (req.query.subCategoryId) filter.subCategoryId = req.query.subCategoryId;
+    if (req.query.brandId) filter.brandId = req.query.brandId;
+    if (req.query.type) filter.type = req.query.type;
+    if (req.query.region) filter.region = req.query.region;
+    if (req.query.title) filter.title = new RegExp(req.query.title, "i");
+
+    // Price Range Filter
+    if (req.query.minPrice || req.query.maxPrice) {
+      filter.discountPrice = {};
+      if (req.query.minPrice) filter.discountPrice.$gte = parseFloat(req.query.minPrice);
+      if (req.query.maxPrice) filter.discountPrice.$lte = parseFloat(req.query.maxPrice);
+    }
+
+    // Handle platform title search
+    if (req.query.platform) {
+      const platformData = await Platform.findOne({ title: req.query.platform });
+      if (platformData) {
+        filter.platform = platformData._id;
+      } else {
+        return res.status(404).json({ status: "fail", message: "Platform not found" });
+      }
+    }
+
+    // Fetch products with filters and sorting
+    const products = await Products.find(filter)
       .populate("categoryId")
       .populate("subCategoryId")
       .populate("brandId")
       .populate("sellerId")
-      .populate({ path: "platform", model: "Platform" })
-      .populate({ path: "region", model: "Region" })
-
+      .populate("platform")
+      .populate("region")
+      .sort(sortOption)
       .skip(skip)
       .limit(limit);
-    const totalproducts = await Products.countDocuments();
-    const totalPages = Math.ceil(totalproducts / limit);
+
+    const totalProducts = await Products.countDocuments(filter);
+    const totalPages = Math.ceil(totalProducts / limit);
+
     res.status(200).json({
       status: "success",
       data: products,
       pagination: {
-        total: totalproducts,
+        total: totalProducts,
         totalPages,
         currentPage: page,
         hasNextPage: page < totalPages,
@@ -118,7 +151,7 @@ export const getAllProducts = catchAsyncError(async (req, res, next) => {
       },
     });
   } catch (error) {
-    console.error("Error fetching users:", error);
+    console.error("Error fetching products:", error);
     res.status(500).json({
       status: "fail",
       error: "Internal Server Error",
