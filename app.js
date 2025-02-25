@@ -25,6 +25,7 @@ import ratingRoute from "./routes/RatingRouter.js";
 import regionRoute from "./routes/RegionRouter.js";
 import platformRouter from "./routes/PlatformRouter.js";
 import subscribeRouter from "./routes/SubscribeRouter.js";
+import bundleDealsRouter from "./routes/BundleDealsRouter.js";
 connectDB();
 
 app.use(cors());
@@ -63,6 +64,7 @@ app.use("/rating", ratingRoute);
 app.use("/region", regionRoute);
 app.use("/platform", platformRouter);
 app.use("/subscribe", subscribeRouter);
+app.use("/bundleDeals", bundleDealsRouter);
 app.get("/", async (req, res) => {
   res.send("App Is Running");
 });
