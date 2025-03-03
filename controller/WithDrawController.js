@@ -39,6 +39,24 @@ export const getAllWithdraws = async (req, res) => {
     });
   }
 };
+export const getSellerWithdraws = async (req, res) => {
+    const { sellerId } = req.params;
+
+    try {
+      const withdraws = await WithDraw.find({ sellerId }).populate("sellerId");
+      res.status(200).json({
+        status: "success",
+        data: withdraws,
+      });
+    } catch (error) {
+      res.status(500).json({
+        status: "fail",
+        message: "Failed to fetch withdraw requests",
+        error,
+      });
+    }
+};
+
 
 export const updateWithdrawStatus = async (req, res) => {
   const { id } = req.params;
