@@ -7,7 +7,7 @@ const sellerSchema = new Schema({
     type: String,
     require: true,
   },
-  logo:{
+  logo: {
     type: String,
   },
   registrationNumber: {
@@ -53,6 +53,10 @@ const sellerSchema = new Schema({
   },
   description: {
     type: String,
+    require: true,
+  },
+  bankDetails: {
+    type: Object,
     require: true,
   },
 });
