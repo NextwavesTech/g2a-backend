@@ -26,6 +26,7 @@ import regionRoute from "./routes/RegionRouter.js";
 import platformRouter from "./routes/PlatformRouter.js";
 import subscribeRouter from "./routes/SubscribeRouter.js";
 import bundleDealsRouter from "./routes/BundleDealsRouter.js";
+import withDrawRoute from "./routes/WithDrawRouter.js";
 connectDB();
 
 app.use(cors());
@@ -65,6 +66,7 @@ app.use("/region", regionRoute);
 app.use("/platform", platformRouter);
 app.use("/subscribe", subscribeRouter);
 app.use("/bundleDeals", bundleDealsRouter);
+app.use("/withdraw", withDrawRoute);
 app.get("/", async (req, res) => {
   res.send("App Is Running");
 });

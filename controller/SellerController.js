@@ -48,6 +48,7 @@ export const register = catchAsyncError(async (req, res, next) => {
       cnicFront: result.url,
       cnicBack: result1.url,
       logo: result2.url,
+
     };
 
     const user = await Sellers.create(data1);
@@ -169,3 +170,6 @@ export const deleteCustomerById = async (req, res, next) => {
     next(error);
   }
 };
+
+
+
