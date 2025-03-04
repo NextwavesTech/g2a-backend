@@ -12,11 +12,14 @@ const userSchema = new Schema({
     require: true,
   },
 
- password:{
+  password: {
     type: String,
     require: true,
- },
-
+  },
+  logo: {
+    type: String,
+    require: true,
+  },
   status: {
     type: String,
     enum: ["pending", "approved", "rejected"],

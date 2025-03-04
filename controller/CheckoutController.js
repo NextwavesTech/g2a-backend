@@ -63,7 +63,16 @@ export const updateCheckout = catchAsyncError(async (req, res, next) => {
 // Get All Checkout
 export const getAllCheckout = catchAsyncError(async (req, res, next) => {
   try {
-    const checkout = await Checkout.find();
+    const checkout = await Checkout.find().populate({
+      path: "productIds",
+      model: "Products",
+      populate: [
+        { path: "categoryId", model: "Category" },
+        { path: "brandId", model: "Brand" },
+        { path: "platform", model: "Platform" },
+        { path: "region", model: "Region" }
+      ]
+    });
     res.status(200).json({
       status: "success",
       data: checkout,
@@ -80,7 +89,16 @@ export const getAllCheckout = catchAsyncError(async (req, res, next) => {
 export const deleteCheckoutById = async (req, res, next) => {
   const id = req.params.id;
   try {
-    const delCheckout = await Checkout.findByIdAndDelete(id);
+    const delCheckout = await Checkout.findByIdAndDelete(id).populate({
+      path: "productIds",
+      model: "Products",
+      populate: [
+        { path: "categoryId", model: "Category" },
+        { path: "brandId", model: "Brand" },
+        { path: "platform", model: "Platform" },
+        { path: "region", model: "Region" }
+      ]
+    });
     if (!delCheckout) {
       return res.json({ status: "fail", message: "Checkout not Found" });
     }

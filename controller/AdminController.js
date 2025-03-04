@@ -100,17 +100,7 @@ export const UpdateProfile = catchAsyncError(async (req, res, next) => {
   if (!updatedUser) {
     return res.status(404).json({ message: "Admin not found" });
   }
-  // await redisClient.set(
-  //   `user:${userId}`,
-  //   JSON.stringify(updatedUser),
-  //   "EX",
-  //   3600
-  // );
-  // await producer.connect();
-  // await producer.send({
-  //   topic: "user-events",
-  //   messages: [{ value: JSON.stringify({ action: "update", updatedUser }) }],
-  // });
+ 
   res.status(200).json({
     status: "success",
     data: updatedUser,
