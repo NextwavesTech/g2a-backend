@@ -28,7 +28,7 @@ export const createCheckout = catchAsyncError(async (req, res, next) => {
 export const getCheckoutById = async (req, res, next) => {
   const id = req?.params.id;
   try {
-    const data = await Checkout.findById(id).populate({
+    const data = await Checkout.findById(id).populate('userId').populate({
       path: "productIds",
       model: "Products",
       populate: [
