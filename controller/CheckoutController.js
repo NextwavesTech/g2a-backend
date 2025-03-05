@@ -152,8 +152,7 @@ export const getUserCheckouts = async (req, res) => {
     res.status(500).json({ status: "fail", error: "Internal Server Error" });
   }
 };
-import Checkout from "../models/Checkout.js";
-import Product from "../models/Product.js";
+
 
 export const getSellerCheckouts = async (req, res) => {
   try {
