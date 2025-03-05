@@ -1,5 +1,6 @@
 import { catchAsyncError } from "../middleware/catchAsyncError.js";
 import { Checkout } from "../model/Checkout.js";
+import {Products } from "../model/Product.js";
 import cloudinary from "cloudinary";
 cloudinary.v2.config({
   cloud_name: "ddu4sybue",
@@ -27,7 +28,17 @@ export const createCheckout = catchAsyncError(async (req, res, next) => {
 export const getCheckoutById = async (req, res, next) => {
   const id = req?.params.id;
   try {
-    const data = await Checkout.findById(id);
+    const data = await Checkout.findById(id).populate({
+      path: "productIds",
+      model: "Products",
+      populate: [
+        { path: "categoryId", model: "MidCategory" },
+        { path: "subCategoryId", model: "SubCategory" },
+        { path: "brandId", model: "Brands" },
+        { path: "platform", model: "Platform" },
+        { path: "region", model: "Region" }
+      ]
+    });
 
     res.json({
       status: "success",
@@ -63,16 +74,7 @@ export const updateCheckout = catchAsyncError(async (req, res, next) => {
 // Get All Checkout
 export const getAllCheckout = catchAsyncError(async (req, res, next) => {
   try {
-    const checkout = await Checkout.find().populate({
-      path: "productIds",
-      model: "Products",
-      populate: [
-        { path: "categoryId", model: "MidCategory" },
-        { path: "brandId", model: "Brands" },
-        { path: "platform", model: "Platform" },
-        { path: "region", model: "Region" }
-      ]
-    });
+    const checkout = await Checkout.find().populate('userId')
     res.status(200).json({
       status: "success",
       data: checkout,
@@ -169,21 +171,31 @@ export const getSellerCheckouts = async (req, res) => {
         match: { sellerId }, // Filter products by sellerId
         populate: [
           { path: "categoryId", model: "MidCategory" },
+          { path: "subCategoryId", model: "SubCategory" },
           { path: "brandId", model: "Brands" },
           { path: "platform", model: "Platform" },
-          { path: "region", model: "Region" }
-        ]
+          { path: "region", model: "Region" },
+        ],
       })
-      .then((results) => results.filter((checkout) => checkout.productIds.length > 0)) // Keep checkouts that have products from the seller
-      .slice(skip, skip + parseInt(limit)) // Apply pagination manually
-      .sort((a, b) => b.createdAt - a.createdAt); // Sort by newest first
+      .sort({ createdAt: -1 }) // Sort by newest first
+      .skip(skip)
+      .limit(parseInt(limit));
 
-    const totalCheckouts = checkouts.length;
+    // Filter out checkouts that have no matching products
+    const filteredCheckouts = checkouts.filter(
+      (checkout) => checkout.productIds.length > 0
+    );
+
+    // Count total checkouts for the seller
+    const totalCheckouts = await Checkout.countDocuments({
+      productIds: { $in: await getProductIdsBySeller(sellerId) },
+    });
+
     const totalPages = Math.ceil(totalCheckouts / limit);
 
     res.status(200).json({
       status: "success",
-      data: checkouts,
+      data: filteredCheckouts,
       pagination: {
         total: totalCheckouts,
         totalPages,
@@ -196,4 +208,8 @@ export const getSellerCheckouts = async (req, res) => {
     console.error("Error fetching seller checkouts:", error);
     res.status(500).json({ status: "fail", error: "Internal Server Error" });
   }
+};
+const getProductIdsBySeller = async (sellerId) => {
+  const products = await Products.find({ sellerId }, "_id");
+  return products.map((product) => product._id);
 };
