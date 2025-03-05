@@ -152,3 +152,49 @@ export const getUserCheckouts = async (req, res) => {
     res.status(500).json({ status: "fail", error: "Internal Server Error" });
   }
 };
+import Checkout from "../models/Checkout.js";
+import Product from "../models/Product.js";
+
+export const getSellerCheckouts = async (req, res) => {
+  try {
+    const { sellerId } = req.params; // Get sellerId from URL params
+    const { page = 1, limit = 10 } = req.query;
+
+    const skip = (page - 1) * limit;
+
+    // Find checkouts where at least one product belongs to the seller
+    const checkouts = await Checkout.find()
+      .populate({
+        path: "productIds",
+        model: "Products",
+        match: { sellerId }, // Filter products by sellerId
+        populate: [
+          { path: "categoryId", model: "Category" },
+          { path: "brandId", model: "Brand" },
+          { path: "platform", model: "Platform" },
+          { path: "region", model: "Region" }
+        ]
+      })
+      .then((results) => results.filter((checkout) => checkout.productIds.length > 0)) // Keep checkouts that have products from the seller
+      .slice(skip, skip + parseInt(limit)) // Apply pagination manually
+      .sort((a, b) => b.createdAt - a.createdAt); // Sort by newest first
+
+    const totalCheckouts = checkouts.length;
+    const totalPages = Math.ceil(totalCheckouts / limit);
+
+    res.status(200).json({
+      status: "success",
+      data: checkouts,
+      pagination: {
+        total: totalCheckouts,
+        totalPages,
+        currentPage: parseInt(page),
+        hasNextPage: page < totalPages,
+        hasPrevPage: page > 1,
+      },
+    });
+  } catch (error) {
+    console.error("Error fetching seller checkouts:", error);
+    res.status(500).json({ status: "fail", error: "Internal Server Error" });
+  }
+};
