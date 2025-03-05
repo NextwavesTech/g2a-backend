@@ -17,6 +17,10 @@ const withDrawSchema = new Schema({
     enum: ["pending", "approved"],
     default: "pending",
   },
+  commission: {
+    type: String,
+    default: "10",
+  },
   amount: {
     type: String,
     required: true,
