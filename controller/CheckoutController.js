@@ -67,8 +67,8 @@ export const getAllCheckout = catchAsyncError(async (req, res, next) => {
       path: "productIds",
       model: "Products",
       populate: [
-        { path: "categoryId", model: "Category" },
-        { path: "brandId", model: "Brand" },
+        { path: "categoryId", model: "MidCategory" },
+        { path: "brandId", model: "Brands" },
         { path: "platform", model: "Platform" },
         { path: "region", model: "Region" }
       ]
@@ -123,8 +123,8 @@ export const getUserCheckouts = async (req, res) => {
         path: "productIds",
         model: "Products",
         populate: [
-          { path: "categoryId", model: "Category" },
-          { path: "brandId", model: "Brand" },
+          { path: "categoryId", model: "MidCategory" },
+          { path: "brandId", model: "Brands" },
           { path: "platform", model: "Platform" },
           { path: "region", model: "Region" }
         ]
@@ -168,8 +168,8 @@ export const getSellerCheckouts = async (req, res) => {
         model: "Products",
         match: { sellerId }, // Filter products by sellerId
         populate: [
-          { path: "categoryId", model: "Category" },
-          { path: "brandId", model: "Brand" },
+          { path: "categoryId", model: "MidCategory" },
+          { path: "brandId", model: "Brands" },
           { path: "platform", model: "Platform" },
           { path: "region", model: "Region" }
         ]
