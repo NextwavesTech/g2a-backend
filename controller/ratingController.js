@@ -103,14 +103,32 @@ export const getOverallRating = async (req, res) => {
   const { id } = req.params;
   try {
     const ratings = await Rating.find({ product: id });
+
+    // Calculate the overall average rating
     let sum = 0;
     ratings.forEach((rating) => {
       sum += rating.rating;
     });
     const overallRating = sum / ratings.length;
+
+    // Count the number of each rating (5, 4, 3, 2, 1)
+    const ratingCounts = { 5: 0, 4: 0, 3: 0, 2: 0, 1: 0 };
+    ratings.forEach((rating) => {
+      if (rating.rating >= 1 && rating.rating <= 5) {
+        ratingCounts[rating.rating]++;
+      }
+    });
+
+    // Get the total number of ratings (length of the ratings array)
+    const totalRatings = ratings.length;
+
     res.status(200).json({
-      data: overallRating,
-      message: "Overall rating fetched successfully",
+      data: {
+        overallRating: overallRating.toFixed(1), // Round to 1 decimal place
+        ratingCounts: ratingCounts,
+        totalRatings: totalRatings, // Include total number of ratings
+      },
+      message: "Overall rating, rating counts, and total ratings fetched successfully",
       status: "success",
     });
   } catch (error) {
