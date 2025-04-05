@@ -5,7 +5,7 @@ import {Platform} from '../model/Platform.js'
 import cloudinary from "cloudinary";
 import { Rating } from "../model/rating.js";
 import nodemailer from "nodemailer";
-import { User } from "../model/user.js";
+import { User } from "../model/User.js";
 cloudinary.v2.config({
   cloud_name: "ddu4sybue",
   api_key: "658491673268817",
