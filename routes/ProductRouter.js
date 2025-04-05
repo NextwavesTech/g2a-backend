@@ -13,7 +13,7 @@ import {
   getProductsBySellerId,
   updateProducts,
   getAccountProducts,
-  getMicrosoftProducts,getKeysProducts
+  getMicrosoftProducts,getKeysProducts,sendKeyEmail
 } from "../controller/ProductController.js";
 const productRouter = express.Router();
 
@@ -35,4 +35,5 @@ productRouter.route("/getBestSellers").get(getBestSellers);
 productRouter.route("/getProductByAccount").get(getAccountProducts);
 productRouter.route("/getProductByMicrosoft").get(getMicrosoftProducts);
 productRouter.route("/getProductByKey").get(getKeysProducts);
+productRouter.route("/sendEmail").post(sendKeyEmail);
 export default productRouter;
