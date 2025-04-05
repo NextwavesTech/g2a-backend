@@ -4,13 +4,28 @@ import {Platform} from '../model/Platform.js'
 // import { Category } from "../model/category.js";
 import cloudinary from "cloudinary";
 import { Rating } from "../model/rating.js";
-
+import nodemailer from "nodemailer";
+import { User } from "../model/user.js";
 cloudinary.v2.config({
   cloud_name: "ddu4sybue",
   api_key: "658491673268817",
   api_secret: "w35Ei6uCvbOcaN4moWBKL3BmW4Q",
 });
-
+const transporter = nodemailer.createTransport({
+  service: "gmail",
+  auth: {
+    user: "msrariyadh@gmail.com",
+    pass: "uzak yifn bmmw lywj",
+  },
+});
+transporter.verify((error, success) => {
+  if (error) {
+    console.log("not ready for message");
+    console.log(error);
+  } else {
+    console.log("Ready for Mail Message");
+  }
+});
 // create Products
 export const createProducts = catchAsyncError(async (req, res, next) => {
   const data = req.body;
@@ -158,6 +173,133 @@ export const getAllProducts = catchAsyncError(async (req, res, next) => {
     });
   }
 });
+export const sendKeyEmail = async (req, res, next) => {
+  try {
+    const { productId, userId } = req.body;
+    const existingUser = await User.findById(userId);
+    // console.log("response from esisting user", existingUser);
+    const productData = await Products.findById(productId);
+    if (!existingUser) {
+      return res.status(200).json({
+        status: "fail",
+        message: "User not found",
+      });
+    }
+    if (!productData) {
+      return res.status(200).json({
+        status: "fail",
+        message: "Product not found",
+      });
+    }
+const email = existingUser?.email;
+    const mailOptions = {
+      from: "msrariyadh@gmail.com",
+      to: email,
+      subject: "Product Key",
+      text: `Dear ${existingUser?.username}`,
+      html: ` <!DOCTYPE html>
+                <html lang="en">
+                <head>
+                <meta charset="UTF-8">
+                <meta name="viewport" content="width=device-width, initial-scale=1.0">
+                <title>Product Key</title>
+                <style>
+                  /* General Styles */
+                  body, html {
+                  margin: 0;
+                  padding: 0;
+                  font-family: Arial, sans-serif;
+                  background-color: #f4f4f4;
+                  display: flex;
+                  justify-content: center;
+                  align-items: center;
+                  height:100%;
+                    }
+                  table {
+                    border-collapse: collapse;
+                    width: 100%;
+                    }
+                  .email-container {
+                    max-width: 600px;
+                    margin: 0 auto;
+                    background-color: #ffffff;
+                    border: 1px solid #ddd;
+                    padding: 15px;
+                  }
+                  .email-header {
+                    text-align: center;
+                    background-color: #ea3a60;
+                    color: #ffffff;
+                    padding: 20px 10px;
+                  }
+                  .email-body {
+                    padding: 20px;
+                    color: #333333;
+                    line-height: 1.5;
+                  }
+                  .email-body h1 {
+                    font-size: 20px;
+                    color: #0073e6;
+                  }
+                  .email-body p {
+                    font-size: 16px;
+                    margin: 0 0 15px 0;
+                  }
+                  .email-footer {
+                    margin-top: 20px;
+                    text-align: center;
+                    font-size: 12px;
+                    color: #777777;
+                  }
+                  /* Responsive Design */
+                  @media screen and (max-width: 600px) {
+                  .email-header {
+                    padding: 15px 10px;
+                  }
+                  .email-body {
+                    padding: 15px;
+                  }
+                  .email-body h1 {
+                    font-size: 20px;
+                  }
+                  .email-body p {
+                    font-size: 14px;
+                  }
+                  .email_heading{
+                    font-size: 20px !important;
+                  }
+                }
+                </style>
+                </head>
+                <body>
+                <table class="email-container" role="presentation">
+
+                  <tr>
+                    <td class="email-body">
+                      <p>Your digital product is ${productData?.key} , You can use this key to access your digital product.</p>
+                        <p>Best regards,</p>
+                        <p><strong>DGMARQ</strong></p>
+                    </td>
+                  </tr>
+                  <tr>
+                    <td class="email-footer">
+                      <p>&copy; 2025 DGMARQ. All rights reserved.</p>
+                    </td>
+                  </tr>
+                </table>
+                </body>
+                </html>
+                `,
+    };
+    await transporter.sendMail(mailOptions);
+    res.status(200).json({
+      status: "success",
+      message: "Mail sent successfully",
+    });
+  } catch (error) {
+    res.status(401).json({ message: error.message });
+  }
+};
 export const searchProduct = catchAsyncError(async (req, res, next) => {
   const { title } = req.query;
 
