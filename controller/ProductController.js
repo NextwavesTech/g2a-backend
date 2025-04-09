@@ -178,7 +178,7 @@ export const sendKeyEmail = async (req, res, next) => {
     const { productId, userId } = req.body;
     const existingUser = await User.findById(userId);
     // console.log("response from esisting user", existingUser);
-    const productData = await Products.findById(productId);
+    const productData = await Products.findById(productId).populate("sellerId");;
     if (!existingUser) {
       return res.status(200).json({
         status: "fail",
@@ -197,98 +197,172 @@ const email = existingUser?.email;
       to: email,
       subject: "Product Key",
       text: `Dear ${existingUser?.username}`,
-      html: ` <!DOCTYPE html>
-                <html lang="en">
-                <head>
-                <meta charset="UTF-8">
-                <meta name="viewport" content="width=device-width, initial-scale=1.0">
-                <title>Product Key</title>
-                <style>
-                  /* General Styles */
-                  body, html {
-                  margin: 0;
-                  padding: 0;
-                  font-family: Arial, sans-serif;
-                  background-color: #f4f4f4;
-                  display: flex;
-                  justify-content: center;
-                  align-items: center;
-                  height:100%;
-                    }
-                  table {
-                    border-collapse: collapse;
-                    width: 100%;
-                    }
-                  .email-container {
-                    max-width: 600px;
-                    margin: 0 auto;
-                    background-color: #ffffff;
-                    border: 1px solid #ddd;
-                    padding: 15px;
-                  }
-                  .email-header {
-                    text-align: center;
-                    background-color: #ea3a60;
-                    color: #ffffff;
-                    padding: 20px 10px;
-                  }
-                  .email-body {
-                    padding: 20px;
-                    color: #333333;
-                    line-height: 1.5;
-                  }
-                  .email-body h1 {
-                    font-size: 20px;
-                    color: #0073e6;
-                  }
-                  .email-body p {
-                    font-size: 16px;
-                    margin: 0 0 15px 0;
-                  }
-                  .email-footer {
-                    margin-top: 20px;
-                    text-align: center;
-                    font-size: 12px;
-                    color: #777777;
-                  }
-                  /* Responsive Design */
-                  @media screen and (max-width: 600px) {
-                  .email-header {
-                    padding: 15px 10px;
-                  }
-                  .email-body {
-                    padding: 15px;
-                  }
-                  .email-body h1 {
-                    font-size: 20px;
-                  }
-                  .email-body p {
-                    font-size: 14px;
-                  }
-                  .email_heading{
-                    font-size: 20px !important;
-                  }
-                }
-                </style>
-                </head>
-                <body>
-                <table class="email-container" role="presentation">
-
-                  <tr>
-                    <td class="email-body">
-                      <p>Your digital product is ${productData?.key} , You can use this key to access your digital product.</p>
-                        <p>Best regards,</p>
-                        <p><strong>DGMARQ</strong></p>
-                    </td>
-                  </tr>
-                  <tr>
-                    <td class="email-footer">
-                      <p>&copy; 2025 DGMARQ. All rights reserved.</p>
-                    </td>
-                  </tr>
-                </table>
-                </body>
-                </html>
+        html: ` <!DOCTYPE html>
+      <html lang="en">
+        <head>
+          <meta charset="UTF-8" />
+          <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+          <title>Order Confirmation - G2A</title>
+          <style>
+            body {
+              font-family: Arial, sans-serif;
+              background-color: #ffffff;
+              margin: 0;
+              padding: 0;
+              color: #333333;
+            }
+      
+            .container {
+              max-width: 600px;
+              margin: auto;
+              padding: 20px;
+            }
+      
+            .header {
+              text-align: center;
+              padding: 20px 0;
+            }
+      
+            .header img {
+              max-width: 100px;
+            }
+      
+            .order-box {
+              border: 1px solid #e0e0e0;
+              padding: 15px;
+              margin: 20px 0;
+              border-radius: 8px;
+            }
+      
+            .order-item {
+              display: flex;
+              flex-direction: row;
+              gap: 10px;
+            }
+      
+            .order-item img {
+              max-width: 80px;
+              border-radius: 4px;
+            }
+      
+            .item-details {
+              flex: 1;
+              margin-left: 10px;
+            }
+      
+            .item-details h4 {
+              margin: 0 0 5px 0;
+            }
+      
+            .total {
+              text-align: right;
+              font-weight: bold;
+              margin-top: 10px;
+            }
+      
+            .info {
+              margin-top: 20px;
+              font-size: 14px;
+            }
+      
+            .info p {
+              margin: 5px 0;
+            }
+      
+            .support {
+              margin-top: 20px;
+              font-size: 14px;
+            }
+      
+            .support a {
+              color: #0073e6;
+              text-decoration: none;
+            }
+      
+            .footer {
+              text-align: center;
+              margin-top: 30px;
+              font-size: 12px;
+              color: #777;
+            }
+      
+            .app-links {
+              margin-top: 10px;
+            }
+      
+            .app-links img {
+              width: 120px;
+              margin: 5px;
+            }
+      
+            @media screen and (max-width: 600px) {
+              .order-item {
+                flex-direction: column;
+                align-items: center;
+              }
+      
+              .order-item img {
+                max-width: 100%;
+              }
+      
+              .item-details {
+                text-align: center;
+                
+              }
+            }
+          </style>
+        </head>
+        <body>
+          <div class="container">
+           
+      
+            <h3>Hello! ${existingUser?.username}</h3>
+            <p>Here is your order from ${productData?.sellerId?.companyName}.</p>
+      
+            <div class="order-box">
+              <div class="order-item">
+                <img
+                  src=${productData?.images[0]}
+                  alt="Steam Gift Card"
+                />
+                <div class="item-details">
+                  <h4>${productData?.title} 1 USD - Steam Key - For USD Currency Only</h4>
+                  <p>1 x ${productData?.actualPrice} USD</p>
+                  <button style="padding: 8px 12px; background-color: #0073e6; color: white; border: none; border-radius: 4px; cursor: pointer;">Get order</button>
+                </div>
+              </div>
+              <div class="total">Total price: ${productData?.actualPrice} USD</div>
+            </div>
+      
+            <div class="info">
+              <p><strong>Order number:</strong> ${productData?._id}</p>
+              <p><strong>Payment method:</strong> Cards</p>
+              
+              <p><strong>Seller details:</strong><br />
+              ${productData?.sellerId?.companyName}<br />
+                ${productData?.sellerId.companyAdress}</p>
+              <p><strong>Purchase number from ${productData?.title}:</strong> ${productData?.key}</p>
+            </div>
+      
+            <div class="support">
+              <p>Need more details?</p>
+              <ul>
+                <li><a href="#">Go to Support Hub</a> to read about Return Policies</li>
+                <li><a href="#">Sign in or register</a> with this email to check your order details</li>
+              </ul>
+            </div>
+      
+            <div class="footer">
+              <p>This email has been generated automatically. Please do not reply to it.</p>
+              <div class="app-links">
+                <img src="https://res.cloudinary.com/dbxylmxb4/image/upload/v1744204420/download_1_iezczy.png" alt="App Store" />
+                <img src="https://res.cloudinary.com/dbxylmxb4/image/upload/v1744204341/download_hrk5tg.png" alt="Google Play" />
+              </div>
+            </div>
+          </div>
+        </body>
+      </html>
+      
                 `,
     };
     await transporter.sendMail(mailOptions);
